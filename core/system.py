@@ -54,9 +54,13 @@ class RuntimeData(object):
         if os.path.isdir(cls.runtime_data_path()) is False:
             os.makedirs(cls.runtime_data_path())
         runtime_data = {}
+        if os.path.isfile(os.path.join(cls.runtime_data_path(), '.runtime.json')) is False:
+            with open(os.path.join(cls.runtime_data_path(), '.runtime.json'), 'w') as file:
+                file.write(json.dumps({}))
+            return False
         with open(os.path.join(cls.runtime_data_path(), '.runtime.json'), 'r') as file:
             runtime_data = json.loads(file.read())
-        return name is runtime_data
+        return name in runtime_data
 
 
 class System(object):

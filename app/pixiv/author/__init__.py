@@ -34,12 +34,17 @@ class Main(CoreSpider):
     @classmethod
     def start_requests(cls):
         pass
-        url = 'https://www.pixiv.net/member_illust.php?id=22726581'
+        url = 'https://www.pixiv.net/member_illust.php?id=16712573'
         meta = {}
         yield from PixivAuthRequests.check(url=url, meta=meta, callback=cls.author_main)
 
     @classmethod
     def author_main(cls, response: HtmlResponse):
+
+
+
+
+
         author_data = PageData.author_data(response)
         author_meta_item = DataItem.AuthorMetaItem({
             'id': author_data['userId'],

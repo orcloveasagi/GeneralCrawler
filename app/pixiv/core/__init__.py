@@ -65,7 +65,8 @@ class PixivAuthRequests(object):
         auth_setting_url = 'https://www.pixiv.net/setting_user.php'
 
         cookies = {}
-        if RuntimeData.has('cookies') is not None:
+        valid = RuntimeData.has('cookies')
+        if valid is True:
             cookies = RuntimeData.get('cookies')
         yield Request(url=auth_setting_url, callback=cls.valid, headers=headers, cookies=cookies, meta=meta, **kwargs)
 
@@ -117,3 +118,4 @@ class PixivAuthRequests(object):
             for cookie_name, cookie_item in cookie_simple_cookie.items()
         ]
         RuntimeData.set('cookies', cookie_datas)
+        yield Request(url=cls.auth_succes_data['url'], callback=cls.auth_succes_data['callback'])
