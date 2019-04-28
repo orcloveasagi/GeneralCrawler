@@ -19,17 +19,17 @@ class Illustration(object):
         })
 
 
-class Manga(object):
-    @classmethod
-    def resources(cls, response):
-        resources = response.xpath('//*').re(r'pixiv.context.originalImages\[\d*\]\s*=\s*"(\S*)"')
-        for responseUrl in resources:
-            responseUrl = responseUrl.replace('\/', '/')
-            yield ResourceItem({
-                "work": response.meta['detail']['work_meta_item'],
-                "referer": response.url,
-                "resource_url": responseUrl,
-            })
+# class Manga(object):
+#     @classmethod
+#     def resources(cls, response):
+#         resources = response.xpath('//*').re(r'pixiv.context.originalImages\[\d*\]\s*=\s*"(\S*)"')
+#         for responseUrl in resources:
+#             responseUrl = responseUrl.replace('\/', '/')
+#             yield ResourceItem({
+#                 "work": response.meta['detail']['work_meta_item'],
+#                 "referer": response.url,
+#                 "resource_url": responseUrl,
+#             })
 
 
 class IllustrationMultiple(object):
@@ -38,9 +38,36 @@ class IllustrationMultiple(object):
     def is_this(cls, detail):
         return detail['pageCount'] > 1
 
+    # @classmethod
+    # def processing(cls, detail):
+    #     url = 'https://www.pixiv.net/member_illust.php?mode=manga&illust_id=%s' % detail['illustId']
+    #     yield Request(
+    #         url=url,
+    #         meta={
+    #             'detail': detail
+    #         },
+    #         callback=cls.resources
+    #     )
+
+    # @classmethod
+    # def resources(cls, response):
+    #     is_manga = str(response.body).find("member_illust_manga")
+    #     if is_manga > -1:
+    #         resources = response.xpath(
+    #             '//*[@class="item-container"]//a[contains(@class,"full-size-container")]/@href').extract()
+    #         for responsePage in resources:
+    #             url = 'https://www.pixiv.net%s' % responsePage
+    #             yield Request(
+    #                 url=url,
+    #                 meta=response.meta,
+    #                 callback=cls.resource
+    #             )
+    #     else:
+    #         yield from Manga.resources(response)
+
     @classmethod
     def processing(cls, detail):
-        url = 'https://www.pixiv.net/member_illust.php?mode=manga&illust_id=%s' % detail['illustId']
+        url = 'https://www.pixiv.net/ajax/illust/%s/pages' % detail['illustId']
         yield Request(
             url=url,
             meta={
@@ -51,28 +78,15 @@ class IllustrationMultiple(object):
 
     @classmethod
     def resources(cls, response):
-        is_manga = str(response.body).find("member_illust_manga")
-        if is_manga > -1:
-            resources = response.xpath(
-                '//*[@class="item-container"]//a[contains(@class,"full-size-container")]/@href').extract()
-            for responsePage in resources:
-                url = 'https://www.pixiv.net%s' % responsePage
-                yield Request(
-                    url=url,
-                    meta=response.meta,
-                    callback=cls.resource
-                )
-        else:
-            yield from Manga.resources(response)
-
-    @classmethod
-    def resource(cls, response):
-        resource_sources = response.xpath('//img/@src').extract()[0]
-        yield ResourceItem({
-            "work": response.meta['detail']['work_meta_item'],
-            "referer": response.url,
-            "resource_url": resource_sources,
-        })
+        resources = (json.loads(response.text))['body']
+        referer = response.meta['detail']['work_meta_item']['url']
+        for imgs in resources:
+            url = imgs['urls']['original']
+            yield ResourceItem({
+                "work": response.meta['detail']['work_meta_item'],
+                "referer": referer,
+                "resource_url": url,
+            })
 
 
 class Ugoira(object):
